@@ -14,7 +14,8 @@
       "mcp__idea__get_project_dependencies",
       "mcp__idea__get_project_modules",
       "mcp__idea__list_directory_tree",
-      "mcp__idea__get_file_problems"
+      "mcp__idea__get_file_problems",
+      "PowerShell(git *)"
     ]
   },
   "enableAllProjectMcpServers": true,
