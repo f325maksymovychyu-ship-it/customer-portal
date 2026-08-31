@@ -2,9 +2,9 @@
 artifact_type: database_design
 story: US-001
 version: 1
-status: DRAFT
+status: APPROVED
 created_at: 2026-08-31T09:16:56Z
-updated_at: 2026-08-31T09:16:56Z
+updated_at: 2026-08-31T09:46:30Z
 produced_by: db-designer
 inputs:
   - path: docs/specifications/US-001-spec.md

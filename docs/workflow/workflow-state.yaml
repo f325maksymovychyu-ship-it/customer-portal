@@ -4,42 +4,38 @@
 version: 1
 story: US-001
 workflow: story-delivery
-current_stage: DESIGN_REVIEW
-previous_stage: DB_DESIGN
-last_completed_stage: DB_DESIGN
+current_stage: IMPACT_ANALYSIS
+previous_stage: DESIGN_REVIEW
+last_completed_stage: DESIGN_REVIEW
 status: IN_PROGRESS
 attempt: 1
-last_invoked_skill: db-designer
+last_invoked_skill: design-reviewer
 last_result:
   verdict: PASS
-  stage: DB_DESIGN
-  recorded_at: 2026-08-31T09:19:41Z
+  stage: DESIGN_REVIEW
+  recorded_at: 2026-08-31T09:46:30Z
 last_artifacts:
-  - type: database_design
-    path: docs/designs/database/US-001-db-design.md
-    version: 1
-  - type: entity_model
-    path: docs/designs/database/US-001-entity-model.md
+  - type: design_review
+    path: docs/reviews/designs/US-001-design-review.md
     version: 1
 pending_human_gate: null
 blocking_issues: []
 non_blocking_findings:
-  - "DB_DESIGN Q-1 resolved: email column is VARCHAR(254) NOT NULL (OD-001:A)."
-  - "DB_DESIGN Q-1 resolved: entity named Customer / table customer; embodies glossary Customer + Account for US-001 (no profile data). DESIGN_REVIEW to confirm (spec-review F-6)."
-  - "DB_DESIGN Q-2 resolved: password_hash VARCHAR(60) NOT NULL (PC-9); BCrypt output is exactly 60 chars."
-  - "DB_DESIGN Q-4 (TEST_WRITING/IMPLEMENTATION): password 72 limit is BCrypt plaintext input BYTES, enforced in validation/service, not a column constraint; write the 72-byte boundary vector (spec-review F-5)."
-  - "DB_DESIGN: role modeled as EnumType.STRING column VARCHAR(20) with a CHECK, not a customer_role table (PC-5 cites customer_role only as a naming example). DESIGN_REVIEW to confirm."
-  - "DB_DESIGN: ck_customer_role CHECK and role/enabled DB DEFAULT clauses are defensive additions; DESIGN_REVIEW may drop them."
-  - "DB_DESIGN: schema is a new hand-written src/main/resources/schema.sql; ddl-auto=validate; H2 file-based local / in-memory tests (PC-1, PC-2, SEC-10)."
-  - "API_DESIGN F-2 resolved: unknown/extra JSON request fields rejected with 400 (additionalProperties: false); recorded in api_design §3."
-  - "Q-3 (IMPLEMENTATION): confirm Jackson FAIL_ON_UNKNOWN_PROPERTIES enabled and mapped to 400 (api_design §3)."
-  - "Location header targets GET /api/v1/customers/{id}, not implemented by US-001 (future Story)."
+  - "DESIGN_REVIEW verdict PASS: API and DB designs sound, cross-consistent, compliant with the approved Specification and architecture/security conventions. No Critical/Major findings."
+  - "D-1: password character-class policy is only in the OpenAPI description, not a pattern; TEST_WRITING must source password cases from Spec §6.2, not the schema."
+  - "D-2 (confirmed): single Customer entity/table covers glossary Customer + Account for US-001 (no profile data); matches Spec NFR-4, PC-5, API naming. Future split not foreclosed (spec-review F-6 / API Q-1)."
+  - "D-3 (confirmed): role modeled as an EnumType.STRING VARCHAR(20) column, not a customer_role table; PC-5 cites customer_role only as a naming example."
+  - "D-4 (confirmed): ck_customer_role CHECK and role/enabled DEFAULT clauses are defensive DDL-only; acceptable to keep, not verified by ddl-auto=validate."
+  - "D-5: OffsetDateTime <-> TIMESTAMP WITH TIME ZONE under ddl-auto=validate and H2 2.x IDENTITY clause ordering are known trip points; IMPLEMENTATION / IMPLEMENTATION_VERIFICATION own it."
+  - "D-6: password maxLength 72 in the contract is characters; the real limit is 72 bytes (BCrypt input). TEST_WRITING / IMPLEMENTATION own the byte-boundary vector (spec-review F-5, API Q-4)."
+  - "D-7: unknown-JSON-field rejection (additionalProperties: false -> 400) is the design-stage choice Spec §6.3 delegated to API_DESIGN; IMPLEMENTATION must wire Jackson FAIL_ON_UNKNOWN_PROPERTIES + advice mapping (API Q-3)."
+  - "D-8: Location header targets GET /api/v1/customers/{id}, not implemented by US-001; header value is stable and correct."
+  - "D-9: entity-model §6 mentions a 'customer' package; IMPACT_ANALYSIS / IMPLEMENTATION_PLANNING must use the package-map.md packages (model.entity, model.request, model.dto, ...), not a feature package (AD-8)."
+  - "spec-review F-1 (still open, advisory): AC-007 annotation \"AC-2\" is ambiguous with Story AC-002; means api-conventions.md AC-2 (media type)."
+  - "spec-review F-3 (still open, advisory): spec FR-2 bundles Content-Type (415) with the body-shape rule; the 'exactly email + password' rule is only in prose. Matters to TEST_WRITING AC mapping."
+  - "DESIGN_REVIEW PASS recorded: design artifacts api_design, openapi, database_design, entity_model advanced DRAFT -> APPROVED (no human gate follows DESIGN_REVIEW)."
   - "HUMAN_SPEC_APPROVAL approved 2026-08-31T07:48:48Z by obutr <ayubutrym@gmail.com>. Open Decisions resolved: OD-001:A, OD-002:B, OD-003:A, OD-004:A, OD-005:A, OD-006:A. open_decisions.md v1 still shows entries as OPEN; approved resolutions are authoritative."
-  - "F-1: AC-007 annotation \"AC-2\" is ambiguous with Story AC-002; means api-conventions.md AC-2."
-  - "F-3: spec §6.3 / FR-2 bundles Content-Type (415) and body-shape rules; body-shape rule only in prose."
-  - "F-5: spec §6.2 password max 72 'characters' vs BCrypt's 72-byte input limit; treat as bytes downstream."
-  - "F-6: spec entity named 'Customer' vs business-glossary 'Account' for the credential representation; DB_DESIGN reconciled (db-design §3), DESIGN_REVIEW to confirm."
 started_at: 2026-08-30T23:50:01Z
-updated_at: 2026-08-31T09:19:41Z
+updated_at: 2026-08-31T09:46:30Z
 completed_at: null
 archived_at: null
