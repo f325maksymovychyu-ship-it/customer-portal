@@ -1,114 +1,90 @@
 ---
 name: spec-writer
-description: Creates a complete Specification artifact from a clarified User Story.
+description: Creates a complete, implementation-ready Specification from a clarified User Story. Owns the SPECIFICATION stage.
 ---
 
 # Purpose
 
-Generate a complete implementation-ready Specification.
+Own the **SPECIFICATION** stage. Produce the Specification that becomes the
+primary source of truth for design, planning, testing, and implementation.
 
-The Specification must become the primary source of truth for future design, planning, testing and implementation work.
+# Canonical sources
 
----
+- Workflow / stage: `docs/workflow/stage-map.yaml` (`SPECIFICATION`).
+- Artifact paths: `docs/workflow/artifact-paths.yaml` — **authoritative**.
+  Resolve `story`, `clarification_report`, `open_decisions`, `specification`.
+- Front matter: `docs/workflow/artifact-schema.md`.
+- Result vocabulary: `docs/workflow/artifact-lifecycle.md`.
 
-# Required Context
+# Inputs (registry keys)
 
-Read:
-
-- docs/product/product-vision.md
-- docs/product/business-rules.md
-- docs/product/business-glossary.md
-- docs/product/non-functional-requirements.md
-
-Read:
-
-- active User Story
-
-Read:
-
-- Open Decisions for the story
-
----
+- `story`
+- `clarification_report`  (required — consume it; it defines what this spec must cover)
+- `open_decisions`
+- `docs/product/product-vision.md`, `docs/product/business-rules.md`,
+  `docs/product/business-glossary.md`,
+  `docs/product/non-functional-requirements.md`
+- `AGENTS.md`
 
 # Preconditions
 
-If unresolved Open Decisions exist:
+- `clarification_report` and `open_decisions` exist (`CLARIFICATION` completed).
+- If unresolved Open Decisions exist: do **not** guess answers. Represent each in
+  the Specification's "Open Decisions" section and describe its impact on the
+  affected requirements. The decisions are resolved at `HUMAN_SPEC_APPROVAL`.
 
-DO NOT assume answers.
+# Specification structure
 
-Document their impact inside the Specification.
+Front matter per `docs/workflow/artifact-schema.md` (`artifact_type:
+specification`), then:
 
----
-
-# Specification Structure
-
-Generate sections:
-
-## Overview
-
-## Business Goal
-
-## Business Flow
-
-## Functional Requirements
-
-## Acceptance Criteria
-
-## Validation Rules
-
-## Security Requirements
-
-## Error Handling
-
-## Non-Functional Requirements
-
-## Open Decisions
-
-## Traceability
-
----
-
-# Security Requirements
-
-Always specify:
-
-- authentication requirements
-- authorization requirements
-- password handling requirements
-- data exposure restrictions
-
-Do not invent security behavior.
-
----
-
-# Validation Requirements
-
-Explicitly define:
-
-- required fields
-- lengths
-- uniqueness rules
-- allowed values
-- invalid cases
-
-Avoid relying on framework defaults.
-
----
+- Overview
+- Business Goal
+- Business Flow
+- Functional Requirements
+- Acceptance Criteria (stable ids; each traceable to the Story)
+- Validation Rules (required fields, lengths, formats, allowed values, invalid
+  cases — no reliance on framework defaults)
+- Security Requirements (authentication, authorization, credential handling,
+  data-exposure restrictions — never invented; cite `security-conventions.md` or
+  an Open Decision)
+- Error Handling
+- Non-Functional Requirements
+- Out of Scope
+- Open Decisions (with impact)
+- Traceability (Acceptance Criterion → functional requirement / validation rule)
 
 # Output
 
-Create:
+- `specification` (`docs/specifications/{story_id}-spec.md`), `status: DRAFT`.
 
-docs/specifications/<StoryId>-spec.md
+# Result Envelope
 
----
+Return exactly this; the story-orchestrator records the transition:
 
-# Completion Criteria
+```yaml
+result:
+  verdict: PASS | BLOCKED
+  stage: SPECIFICATION
+  story: <StoryId>
+  artifact_status: DRAFT
+  artifacts:
+    - docs/specifications/<StoryId>-spec.md
+  next_stage: SPEC_REVIEW
+  loop_back_stage: null
+  blocking_issues: []
+  non_blocking_findings: []
+```
 
-Complete only when:
+- `PASS` — all Acceptance Criteria represented; validation, security, error
+  handling, and traceability sections complete; Open Decisions listed with
+  impact.
+- `BLOCKED` — `clarification_report` missing, or an Open Decision makes a
+  mandatory requirement impossible to state even as a documented gap.
 
-- all acceptance criteria are represented
-- validation rules are documented
-- security requirements are documented
-- Open Decisions are listed
-- traceability section is present
+# Prohibited
+
+- Do not invent security or business behavior.
+- Do not resolve Open Decisions.
+- Do not create designs, tests, or code.
+- Do not update workflow state.

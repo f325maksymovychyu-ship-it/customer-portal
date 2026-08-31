@@ -1,129 +1,96 @@
 ---
 name: spec-verifier
-description: Reviews a Specification artifact for completeness, consistency, and implementation readiness.
+description: Reviews a Specification for completeness, consistency, traceability, and implementation readiness. Owns the SPEC_REVIEW stage.
 ---
 
 # Purpose
 
-Verify whether a Specification is ready for architectural design and planning.
+Own the **SPEC_REVIEW** stage. Decide whether the Specification is ready to
+proceed to human specification approval and design.
 
-The skill acts as a quality gate.
+The Skill is a quality gate. It does not edit the Specification.
 
----
+# Canonical sources
 
-# Required Context
+- Workflow / stage / loop-back: `docs/workflow/stage-map.yaml` (`SPEC_REVIEW`;
+  loop_back key `changes_required` → `SPECIFICATION`).
+- Artifact paths: `docs/workflow/artifact-paths.yaml` — **authoritative**.
+  Resolve `story`, `specification`, `open_decisions`, `specification_review`.
+- Front matter: `docs/workflow/artifact-schema.md`.
+- Result vocabulary: `docs/workflow/artifact-lifecycle.md`.
 
-Read:
+# Inputs (registry keys)
 
-- docs/product/business-rules.md
-- docs/product/business-glossary.md
-- docs/product/non-functional-requirements.md
+- `story`, `specification`, `open_decisions`
+- `docs/product/business-rules.md`, `docs/product/business-glossary.md`,
+  `docs/product/non-functional-requirements.md`
+- `AGENTS.md`
 
-Read:
+# Preconditions
 
-- Specification
+- `specification` exists (`SPECIFICATION` completed) and is not `SUPERSEDED`.
+- Its `inputs` front matter references the current `story` and
+  `clarification_report` versions. If it was written from a stale Story →
+  `verdict: BLOCKED`.
 
-Read:
+# Verification checklist
 
-- User Story
-
-Read:
-
-- Open Decisions
-
----
-
-# Verification Checklist
-
-Validate:
-
-## Completeness
-
-- business goal exists
-- acceptance criteria exist
-- security requirements exist
-- validation rules exist
-- error handling exists
-
----
-
-## Consistency
-
-Check:
-
-- story vs specification
-- business rules vs specification
-- glossary terminology consistency
-
----
-
-## Traceability
-
-Each acceptance criterion should map to:
-
-- functional requirement
-
-or
-
-- validation rule
-
----
-
-## Security
-
-Verify:
-
-- authentication requirements
-- authorization requirements
-- password handling expectations
-
----
-
-## Open Decisions
-
-Verify:
-
-- all Open Decisions are listed
-- impact is documented
-
----
+- **Completeness**: business goal; Acceptance Criteria; validation rules;
+  security requirements; error handling; out-of-scope; NFRs.
+- **Consistency**: Story vs Specification; business rules vs Specification;
+  glossary terminology.
+- **Traceability**: each Acceptance Criterion maps to a functional requirement
+  or validation rule.
+- **Security**: authentication, authorization, and credential-handling
+  requirements are stated and cite `security-conventions.md` or an Open Decision
+  — none invented.
+- **Open Decisions**: every Open Decision from `open_decisions` appears in the
+  Specification with its impact described.
+- **Testability**: each Acceptance Criterion is expressed in observable terms.
 
 # Findings
 
-Classify findings:
+Classify each: `Critical` (blocks), `Major` (must fix), `Minor` (advisory).
 
-## Critical
+# Output
 
-Blocks progression.
+- `specification_review`
+  (`docs/reviews/specifications/{story_id}-spec-review.md`), front matter per
+  `docs/workflow/artifact-schema.md` (`artifact_type: specification_review`).
+  Sections: Summary; Reviewed Artifacts (paths + versions); Completeness;
+  Consistency; Traceability; Security; Open Decisions; Findings; Verdict.
 
-## Major
+# Result Envelope
 
-Requires correction.
+Return exactly this; the story-orchestrator records the transition:
 
-## Minor
+```yaml
+result:
+  verdict: PASS | CHANGES_REQUIRED | BLOCKED
+  stage: SPEC_REVIEW
+  story: <StoryId>
+  artifact_status: APPROVED        # of the review artifact itself
+  artifacts:
+    - docs/reviews/specifications/<StoryId>-spec-review.md
+  next_stage: HUMAN_SPEC_APPROVAL
+  loop_back_stage: null            # or SPECIFICATION
+  blocking_issues: []
+  non_blocking_findings: []
+```
 
-Should be improved.
+- `PASS` — no `Critical`/`Major` findings; the Specification is
+  implementation-ready. (`Minor` findings go in `non_blocking_findings`.)
+- `CHANGES_REQUIRED` — `Critical` or `Major` findings; `loop_back_stage:
+  SPECIFICATION`.
+- `BLOCKED` — `specification` missing/stale, inputs unresolvable, or an Open
+  Decision prevents meaningful review.
 
----
+Note: a `PASS` here is **not** human approval. The orchestrator advances to
+`HUMAN_SPEC_APPROVAL`, where a person resolves the Open Decisions and approves.
 
-# Outputs
+# Prohibited
 
-Create:
-
-docs/reviews/<StoryId>-spec-review.md
-
-Set review result:
-
-- APPROVED
-- APPROVED_WITH_COMMENTS
-- REJECTED
-
----
-
-# Completion Criteria
-
-A review artifact exists.
-
-All findings are documented.
-
-Approval status is explicitly stated.
+- Do not edit the Specification.
+- Do not resolve Open Decisions.
+- Do not update workflow state.
+- Do not create designs or code.

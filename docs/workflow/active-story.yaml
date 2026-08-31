@@ -1,1 +1,14 @@
+# Identity + activation metadata of the active Story.
+# Schema: docs/workflow/state-schema.md
+# Writer: backlog-sync (directly, or delegated by story-orchestrator on activation).
+version: 1
 active_story: US-001
+story_path: docs/stories/US-001-register-customer.md
+source:
+  type: local_only
+  repository: null
+  issue_number: null
+  issue_url: null
+activated_at: 2026-08-30T23:50:01Z
+activated_by: harness-migration
+status: IN_PROGRESS

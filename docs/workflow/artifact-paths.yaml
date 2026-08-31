@@ -1,0 +1,166 @@
+# =============================================================================
+# CANONICAL ARTIFACT PATH REGISTRY
+# =============================================================================
+# This file is the single authoritative source for where every workflow
+# artifact lives and which Skill owns it.
+#
+# Rules:
+#   - Skills MUST resolve artifact locations from this registry, not from
+#     hard-coded paths. A Skill may show a resolved example path for
+#     readability but must state that this file is authoritative.
+#   - {story_id}  -> canonical Story identifier, e.g. US-001
+#   - {slug}      -> lowercase-kebab short title from the Story front matter
+#   - Exactly one `owner` per artifact type. Other Skills may read or
+#     reference an artifact but must not (re)generate an artifact they do
+#     not own.
+#   - A consumed artifact that has no `owner` here is an external input.
+#
+# Related authorities:
+#   - docs/workflow/stage-map.yaml        workflow + routing
+#   - docs/workflow/artifact-lifecycle.md status vocabularies
+#   - docs/workflow/artifact-schema.md    artifact front matter
+#   - docs/workflow/state-schema.md       workflow state
+# =============================================================================
+
+version: 1
+
+artifacts:
+
+  # --- Backlog / Story ------------------------------------------------------
+  story:
+    pattern: docs/stories/{story_id}-{slug}.md
+    owner: backlog-sync
+    external_ok: true          # may pre-exist locally without a GitHub source
+
+  story_catalog:
+    pattern: docs/catalog/stories.yaml
+    owner: backlog-sync
+
+  # --- Clarification ------------------------------------------------------
+  clarification_report:
+    pattern: docs/evidence/{story_id}-clarification-report.md
+    owner: us-clarifier
+
+  open_decisions:
+    pattern: docs/decisions/{story_id}-open-decisions.md
+    owner: us-clarifier
+
+  # --- Specification ------------------------------------------------------
+  specification:
+    pattern: docs/specifications/{story_id}-spec.md
+    owner: spec-writer
+
+  specification_review:
+    pattern: docs/reviews/specifications/{story_id}-spec-review.md
+    owner: spec-verifier
+
+  # --- Design ------------------------------------------------------------
+  api_design:
+    pattern: docs/designs/api/{story_id}-api-design.md
+    owner: openapi-designer
+
+  openapi:
+    pattern: docs/designs/api/{story_id}-openapi.yaml
+    owner: openapi-designer
+
+  database_design:
+    pattern: docs/designs/database/{story_id}-db-design.md
+    owner: db-designer
+
+  entity_model:
+    pattern: docs/designs/database/{story_id}-entity-model.md
+    owner: db-designer
+
+  design_review:
+    pattern: docs/reviews/designs/{story_id}-design-review.md
+    owner: design-reviewer
+
+  # --- Impact / Planning ------------------------------------------------
+  impact_analysis:
+    pattern: docs/impact-analysis/{story_id}-impact-analysis.md
+    owner: impact-analyzer
+
+  implementation_plan:
+    pattern: docs/plans/{story_id}-implementation-plan.md
+    owner: implementation-planner
+
+  plan_review:
+    pattern: docs/reviews/plans/{story_id}-plan-review.md
+    owner: plan-reviewer
+
+  # --- Tests -----------------------------------------------------------
+  test_strategy:
+    pattern: docs/tests/{story_id}-test-strategy.md
+    owner: test-writer
+
+  ac_test_matrix:
+    pattern: docs/tests/{story_id}-ac-test-matrix.md
+    owner: test-writer
+
+  test_generation_report:
+    pattern: docs/evidence/{story_id}-test-generation-report.md
+    owner: test-writer
+
+  # --- Implementation ------------------------------------------------
+  implementation_report:
+    pattern: docs/evidence/{story_id}-implementation-report.md
+    owner: springboot-implementor
+
+  implementation_verification:
+    pattern: docs/verification/{story_id}-implementation-verification.md
+    owner: implementation-verifier
+
+  security_review:
+    pattern: docs/reviews/security/{story_id}-security-review.md
+    owner: security-reviewer
+
+  # --- Reconciliation ----------------------------------------------
+  reconciliation:
+    pattern: docs/reviews/reconciliation/{story_id}-reconciliation.md
+    owner: reconciliation-reviewer
+
+  traceability:
+    pattern: docs/reconciliation/{story_id}-traceability.md
+    owner: reconciliation-reviewer
+
+  # --- PR ------------------------------------------------------------
+  pr_summary:
+    pattern: docs/pr/{story_id}-pr-summary.md
+    owner: pr-preparer
+
+  # --- Delivery / Archive -----------------------------------------
+  delivery_summary:
+    pattern: docs/evidence/{story_id}-delivery-summary.md
+    owner: story-orchestrator
+
+  # --- Cross-story harness artifacts -----------------------------
+  workflow_history:
+    pattern: docs/workflow/history.jsonl
+    owner: story-orchestrator
+
+  project_state:
+    pattern: docs/knowledge/project-state.md
+    owner: story-orchestrator
+
+# =============================================================================
+# Retired paths (MUST NOT appear in any Skill or config; historical review
+# reports are exempt):
+#   docs/backlog/                              -> docs/stories/
+#   docs/harness-evidence/                     -> docs/evidence/
+#   docs/implementation/{id}-implementation-report.md
+#                                              -> docs/evidence/{id}-implementation-report.md
+#   docs/reviews/{id}-spec-review.md           -> docs/reviews/specifications/{id}-spec-review.md
+#   docs/reviews/{id}-plan-review.md           -> docs/reviews/plans/{id}-plan-review.md
+#   docs/designs/{id}-openapi.yaml             -> docs/designs/api/{id}-openapi.yaml
+#   docs/designs/{id}-api-design.md            -> docs/designs/api/{id}-api-design.md
+#   docs/designs/{id}-db-design.md             -> docs/designs/database/{id}-db-design.md
+#   docs/designs/{id}-entity-model.md          -> docs/designs/database/{id}-entity-model.md
+#   docs/tests/{id}-test-plan.md               -> docs/tests/{id}-test-strategy.md
+#   docs/tests/{id}-test-cases.md              -> docs/tests/{id}-ac-test-matrix.md
+#   docs/security/{id}-security-review.md      -> docs/reviews/security/{id}-security-review.md
+#   docs/reconciliation/{id}-reconciliation.md -> docs/reviews/reconciliation/{id}-reconciliation.md
+#   docs/reconciliation/{id}-archive-summary.md-> docs/evidence/{id}-delivery-summary.md
+#   docs/evidence/orchestrator-events.jsonl    -> docs/workflow/history.jsonl
+#   docs/pr/{id}-release-notes.md              -> folded into docs/pr/{id}-pr-summary.md
+#   docs/pr/{id}-pr-preparation.md             -> folded into docs/pr/{id}-pr-summary.md
+# =============================================================================

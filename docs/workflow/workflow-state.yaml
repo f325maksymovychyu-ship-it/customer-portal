@@ -1,5 +1,21 @@
+# Execution state of the active story-delivery workflow.
+# Schema: docs/workflow/state-schema.md
+# Writer: story-orchestrator ONLY. Stage Skills never write this file.
+version: 1
 story: US-001
-
+workflow: story-delivery
 current_stage: CLARIFICATION
-
+previous_stage: BACKLOG_SYNC
+last_completed_stage: BACKLOG_SYNC
 status: IN_PROGRESS
+attempt: 1
+last_invoked_skill: null
+last_result: null
+last_artifacts: []
+pending_human_gate: null
+blocking_issues: []
+non_blocking_findings: []
+started_at: 2026-08-30T23:50:01Z
+updated_at: 2026-08-30T23:50:01Z
+completed_at: null
+archived_at: null

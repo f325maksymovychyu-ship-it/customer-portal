@@ -1,0 +1,51 @@
+# =============================================================================
+# CANONICAL STORY LIFECYCLE STATUS REGISTRY
+# =============================================================================
+# Authoritative source for each Story's lifecycle status.
+# Owner: backlog-sync (updates this file atomically with
+#        docs/workflow/active-story.yaml). story-orchestrator updates the active
+#        Story's `state` on activation, COMPLETED, and ARCHIVED.
+#
+# Story Markdown files under docs/stories/ do NOT carry a mutable status field.
+#
+# state enum: BACKLOG | READY | IN_PROGRESS | COMPLETED | ARCHIVED
+# =============================================================================
+version: 1
+
+stories:
+
+  - id: US-001
+    slug: register-customer
+    path: docs/stories/US-001-register-customer.md
+    epic: EPIC-1
+    title: Customer Registration
+    state: IN_PROGRESS
+    source:
+      type: local_only
+      repository: null
+      issue_number: null
+      issue_url: null
+
+  - id: US-002
+    slug: customer-login
+    path: docs/stories/US-002-customer-login.md
+    epic: EPIC-1
+    title: Customer Login
+    state: READY
+    source:
+      type: local_only
+      repository: null
+      issue_number: null
+      issue_url: null
+
+  - id: US-003
+    slug: customer-profile-view
+    path: docs/stories/US-003-customer-profile-view.md
+    epic: EPIC-1
+    title: View Customer Profile
+    state: BACKLOG
+    source:
+      type: local_only
+      repository: null
+      issue_number: null
+      issue_url: null
