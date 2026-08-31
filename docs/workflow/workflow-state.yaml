@@ -4,38 +4,39 @@
 version: 1
 story: US-001
 workflow: story-delivery
-current_stage: IMPACT_ANALYSIS
-previous_stage: DESIGN_REVIEW
-last_completed_stage: DESIGN_REVIEW
+current_stage: IMPLEMENTATION_PLANNING
+previous_stage: IMPACT_ANALYSIS
+last_completed_stage: IMPACT_ANALYSIS
 status: IN_PROGRESS
 attempt: 1
-last_invoked_skill: design-reviewer
+last_invoked_skill: impact-analyzer
 last_result:
   verdict: PASS
-  stage: DESIGN_REVIEW
-  recorded_at: 2026-08-31T09:46:30Z
+  stage: IMPACT_ANALYSIS
+  recorded_at: 2026-08-31T10:04:03Z
 last_artifacts:
-  - type: design_review
-    path: docs/reviews/designs/US-001-design-review.md
+  - type: impact_analysis
+    path: docs/impact-analysis/US-001-impact-analysis.md
     version: 1
 pending_human_gate: null
 blocking_issues: []
 non_blocking_findings:
-  - "DESIGN_REVIEW verdict PASS: API and DB designs sound, cross-consistent, compliant with the approved Specification and architecture/security conventions. No Critical/Major findings."
-  - "D-1: password character-class policy is only in the OpenAPI description, not a pattern; TEST_WRITING must source password cases from Spec §6.2, not the schema."
-  - "D-2 (confirmed): single Customer entity/table covers glossary Customer + Account for US-001 (no profile data); matches Spec NFR-4, PC-5, API naming. Future split not foreclosed (spec-review F-6 / API Q-1)."
-  - "D-3 (confirmed): role modeled as an EnumType.STRING VARCHAR(20) column, not a customer_role table; PC-5 cites customer_role only as a naming example."
-  - "D-4 (confirmed): ck_customer_role CHECK and role/enabled DEFAULT clauses are defensive DDL-only; acceptable to keep, not verified by ddl-auto=validate."
-  - "D-5: OffsetDateTime <-> TIMESTAMP WITH TIME ZONE under ddl-auto=validate and H2 2.x IDENTITY clause ordering are known trip points; IMPLEMENTATION / IMPLEMENTATION_VERIFICATION own it."
-  - "D-6: password maxLength 72 in the contract is characters; the real limit is 72 bytes (BCrypt input). TEST_WRITING / IMPLEMENTATION own the byte-boundary vector (spec-review F-5, API Q-4)."
-  - "D-7: unknown-JSON-field rejection (additionalProperties: false -> 400) is the design-stage choice Spec §6.3 delegated to API_DESIGN; IMPLEMENTATION must wire Jackson FAIL_ON_UNKNOWN_PROPERTIES + advice mapping (API Q-3)."
-  - "D-8: Location header targets GET /api/v1/customers/{id}, not implemented by US-001; header value is stable and correct."
-  - "D-9: entity-model §6 mentions a 'customer' package; IMPACT_ANALYSIS / IMPLEMENTATION_PLANNING must use the package-map.md packages (model.entity, model.request, model.dto, ...), not a feature package (AD-8)."
-  - "spec-review F-1 (still open, advisory): AC-007 annotation \"AC-2\" is ambiguous with Story AC-002; means api-conventions.md AC-2 (media type)."
+  - "IMPACT_ANALYSIS verdict PASS: change surface identified with acceptable confidence. US-001 is a small, additive, fully specified feature on a greenfield skeleton; no upstream artifact defect, no loop-back."
+  - "Greenfield: all app packages (controller, service, repository, model.*, validation, security, exception, config) are Create; only CustomerPortalApplication + contextLoads test exist."
+  - "R-1: ddl-auto=validate startup vs OffsetDateTime <-> TIMESTAMP WITH TIME ZONE and H2 2.x IDENTITY clause ordering (design-review D-5); IMPLEMENTATION / IMPLEMENTATION_VERIFICATION own it."
+  - "R-2: Spring Security 6 SecurityFilterChain must scope the CSRF exemption + public matcher to POST /api/v1/customers only and keep anyRequest().authenticated(); SECURITY_REVIEW verifies."
+  - "R-3 (design-review D-6): password 72 limit is BYTES of BCrypt input, not characters; enforce in the validation constraint and the service re-check; TEST_WRITING adds the boundary vector."
+  - "R-4 (design-review D-7): choose the unknown-JSON-field rejection mechanism (Jackson FAIL_ON_UNKNOWN_PROPERTIES vs DTO) in planning; advice maps unknown-field and malformed JSON to 400 (API Q-3)."
+  - "R-5: existing CustomerPortalApplicationTests.contextLoads will need a test profile / in-memory datasource once Security + JPA are enabled (NFR-7)."
+  - "R-6: JPA auditing DateTimeProvider must be pinned to UTC (BR-007, PC-6); config class, not the main application class (AD-7)."
+  - "Dependency: add spring-boot-starter-validation to build.gradle.kts - required by AD-5, first-party starter version-managed by the existing BOM, not a discretionary third-party dependency; confirm at HUMAN_PLAN_APPROVAL."
+  - "Entity naming (design-review D-2) and role-as-enum-column (D-3) confirmed by DESIGN_REVIEW; IMPLEMENTATION_PLANNING must use package-map.md packages, not the entity-model 'customer' feature-package note (D-9, AD-8)."
+  - "open_decisions.md v1 still shows OD-001..OD-006 as OPEN; authoritative resolutions are in history.jsonl (HUMAN_SPEC_APPROVAL) and both designs - documentation lag owned by us-clarifier, non-blocking."
+  - "spec-review F-1 (still open, advisory): AC-007 annotation \"AC-2\" is ambiguous with Story AC-002; means api-conventions.md AC-2 (media type). Matters to TEST_WRITING AC mapping."
   - "spec-review F-3 (still open, advisory): spec FR-2 bundles Content-Type (415) with the body-shape rule; the 'exactly email + password' rule is only in prose. Matters to TEST_WRITING AC mapping."
-  - "DESIGN_REVIEW PASS recorded: design artifacts api_design, openapi, database_design, entity_model advanced DRAFT -> APPROVED (no human gate follows DESIGN_REVIEW)."
   - "HUMAN_SPEC_APPROVAL approved 2026-08-31T07:48:48Z by obutr <ayubutrym@gmail.com>. Open Decisions resolved: OD-001:A, OD-002:B, OD-003:A, OD-004:A, OD-005:A, OD-006:A. open_decisions.md v1 still shows entries as OPEN; approved resolutions are authoritative."
+  - "impact_analysis left at status DRAFT: no review stage follows IMPACT_ANALYSIS; IMPLEMENTATION_PLANNING consumes it directly (invariant permits DRAFT for un-reviewed inputs)."
 started_at: 2026-08-30T23:50:01Z
-updated_at: 2026-08-31T09:46:30Z
+updated_at: 2026-08-31T10:04:03Z
 completed_at: null
 archived_at: null
