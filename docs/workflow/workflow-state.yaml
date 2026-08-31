@@ -4,39 +4,33 @@
 version: 1
 story: US-001
 workflow: story-delivery
-current_stage: IMPLEMENTATION_PLANNING
-previous_stage: IMPACT_ANALYSIS
-last_completed_stage: IMPACT_ANALYSIS
+current_stage: PLAN_REVIEW
+previous_stage: IMPLEMENTATION_PLANNING
+last_completed_stage: IMPLEMENTATION_PLANNING
 status: IN_PROGRESS
 attempt: 1
-last_invoked_skill: impact-analyzer
+last_invoked_skill: implementation-planner
 last_result:
   verdict: PASS
-  stage: IMPACT_ANALYSIS
-  recorded_at: 2026-08-31T10:04:03Z
+  stage: IMPLEMENTATION_PLANNING
+  recorded_at: 2026-08-31T10:28:17Z
 last_artifacts:
-  - type: impact_analysis
-    path: docs/impact-analysis/US-001-impact-analysis.md
+  - type: implementation_plan
+    path: docs/plans/US-001-implementation-plan.md
     version: 1
 pending_human_gate: null
 blocking_issues: []
 non_blocking_findings:
-  - "IMPACT_ANALYSIS verdict PASS: change surface identified with acceptable confidence. US-001 is a small, additive, fully specified feature on a greenfield skeleton; no upstream artifact defect, no loop-back."
-  - "Greenfield: all app packages (controller, service, repository, model.*, validation, security, exception, config) are Create; only CustomerPortalApplication + contextLoads test exist."
-  - "R-1: ddl-auto=validate startup vs OffsetDateTime <-> TIMESTAMP WITH TIME ZONE and H2 2.x IDENTITY clause ordering (design-review D-5); IMPLEMENTATION / IMPLEMENTATION_VERIFICATION own it."
-  - "R-2: Spring Security 6 SecurityFilterChain must scope the CSRF exemption + public matcher to POST /api/v1/customers only and keep anyRequest().authenticated(); SECURITY_REVIEW verifies."
-  - "R-3 (design-review D-6): password 72 limit is BYTES of BCrypt input, not characters; enforce in the validation constraint and the service re-check; TEST_WRITING adds the boundary vector."
-  - "R-4 (design-review D-7): choose the unknown-JSON-field rejection mechanism (Jackson FAIL_ON_UNKNOWN_PROPERTIES vs DTO) in planning; advice maps unknown-field and malformed JSON to 400 (API Q-3)."
-  - "R-5: existing CustomerPortalApplicationTests.contextLoads will need a test profile / in-memory datasource once Security + JPA are enabled (NFR-7)."
-  - "R-6: JPA auditing DateTimeProvider must be pinned to UTC (BR-007, PC-6); config class, not the main application class (AD-7)."
-  - "Dependency: add spring-boot-starter-validation to build.gradle.kts - required by AD-5, first-party starter version-managed by the existing BOM, not a discretionary third-party dependency; confirm at HUMAN_PLAN_APPROVAL."
-  - "Entity naming (design-review D-2) and role-as-enum-column (D-3) confirmed by DESIGN_REVIEW; IMPLEMENTATION_PLANNING must use package-map.md packages, not the entity-model 'customer' feature-package note (D-9, AD-8)."
-  - "open_decisions.md v1 still shows OD-001..OD-006 as OPEN; authoritative resolutions are in history.jsonl (HUMAN_SPEC_APPROVAL) and both designs - documentation lag owned by us-clarifier, non-blocking."
-  - "spec-review F-1 (still open, advisory): AC-007 annotation \"AC-2\" is ambiguous with Story AC-002; means api-conventions.md AC-2 (media type). Matters to TEST_WRITING AC mapping."
-  - "spec-review F-3 (still open, advisory): spec FR-2 bundles Content-Type (415) with the body-shape rule; the 'exactly email + password' rule is only in prose. Matters to TEST_WRITING AC mapping."
-  - "HUMAN_SPEC_APPROVAL approved 2026-08-31T07:48:48Z by obutr <ayubutrym@gmail.com>. Open Decisions resolved: OD-001:A, OD-002:B, OD-003:A, OD-004:A, OD-005:A, OD-006:A. open_decisions.md v1 still shows entries as OPEN; approved resolutions are authoritative."
-  - "impact_analysis left at status DRAFT: no review stage follows IMPACT_ANALYSIS; IMPLEMENTATION_PLANNING consumes it directly (invariant permits DRAFT for un-reviewed inputs)."
+  - "PD-1 (R-4/D-7/API Q-3): unknown-JSON-field rejection is property-driven (spring.jackson.deserialization.fail-on-unknown-properties=true); no JacksonConfig class; one HttpMessageNotReadableException branch in the advice covers malformed JSON + unknown field."
+  - "PD-2 (R-3/D-6/spec-review F-5): password 12..72 bound is measured in UTF-8 BYTES in both the validator and the service re-check; C-T1 needs a multi-byte boundary vector."
+  - "PD-6 (R-1/D-5): createdAt/updatedAt are OffsetDateTime / TIMESTAMP WITH TIME ZONE; if ddl-auto=validate rejects the type token on the project's H2 2.x, IMPLEMENTATION aligns the DDL token or dialect mapping at execution-order step 4."
+  - "New dependency spring-boot-starter-validation (M-1) must be confirmed at HUMAN_PLAN_APPROVAL; mandated by AD-5, BOM-version-managed, first-party."
+  - "Impact-analysis reconciliation: JacksonConfig not created (PD-1); PasswordEncoder bean in SecurityConfig (PD-4); mapping inside CustomerService (PD-3); model.dto FieldError renamed ApiFieldError to avoid the org.springframework.validation.FieldError clash (PD-5). No scope change."
+  - "R-2: C-14 scopes both the public matcher and the CSRF exemption to POST /api/v1/customers; C-T6 asserts a second arbitrary path is still 401. SECURITY_REVIEW verifies."
+  - "R-5: M-4 adds @ActiveProfiles(\"test\") to CustomerPortalApplicationTests so contextLoads still boots with Security + JPA active."
+  - "Test skeletons C-T1..C-T6 are indicative; test-writer owns the definitive AC->test matrix at TEST_WRITING."
+  - "open_decisions.md v1 still shows OD-001..OD-006 as OPEN; authoritative resolutions (OD-001:A, OD-002:B, OD-003:A, OD-004:A, OD-005:A, OD-006:A) are from history.jsonl HUMAN_SPEC_APPROVAL. Documentation lag owned by us-clarifier."
 started_at: 2026-08-30T23:50:01Z
-updated_at: 2026-08-31T10:04:03Z
+updated_at: 2026-08-31T10:28:17Z
 completed_at: null
 archived_at: null
