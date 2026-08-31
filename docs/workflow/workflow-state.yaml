@@ -4,52 +4,46 @@
 version: 1
 story: US-001
 workflow: story-delivery
-current_stage: HUMAN_PLAN_APPROVAL
-previous_stage: PLAN_REVIEW
-last_completed_stage: PLAN_REVIEW
-status: WAITING_FOR_HUMAN
+current_stage: IMPLEMENTATION
+previous_stage: TEST_WRITING
+last_completed_stage: TEST_WRITING
+status: IN_PROGRESS
 attempt: 1
-last_invoked_skill: plan-reviewer
+last_invoked_skill: test-writer
 last_result:
   verdict: PASS
-  stage: PLAN_REVIEW
-  recorded_at: 2026-08-31T11:05:00Z
+  stage: TEST_WRITING
+  recorded_at: 2026-08-31T11:26:00Z
 last_artifacts:
-  - type: plan_review
-    path: docs/reviews/plans/US-001-plan-review.md
+  - type: test_strategy
+    path: docs/tests/US-001-test-strategy.md
     version: 1
-pending_human_gate:
-  stage: HUMAN_PLAN_APPROVAL
-  status: PENDING
-  required_artifacts:
-    - type: implementation_plan
-      path: docs/plans/US-001-implementation-plan.md
-      version: 1
-    - type: plan_review
-      path: docs/reviews/plans/US-001-plan-review.md
-      version: 1
-  automated_verdict: PASS
-  blocking_findings: []
-  requested_at: 2026-08-31T11:05:00Z
-  decided_at: null
-  decided_by: null
-  comment: null
+  - type: ac_test_matrix
+    path: docs/tests/US-001-ac-test-matrix.md
+    version: 1
+  - type: test_generation_report
+    path: docs/evidence/US-001-test-generation-report.md
+    version: 1
+pending_human_gate: null
 blocking_issues: []
 non_blocking_findings:
-  - "F-1: docs/decisions/US-001-open-decisions.md v1 still shows OD-001..OD-006 as status: OPEN; resolutions (OD-001:A, OD-002:B, OD-003:A, OD-004:A, OD-005:A, OD-006:A) are recorded in history.jsonl at HUMAN_SPEC_APPROVAL and applied consistently across five downstream artifacts. us-clarifier should publish v2 marking them RESOLVED. Non-blocking, no loop-back."
-  - "F-2: Execution-order per-step completion criteria for steps 6-10 reference assertions (415, unknown-field/malformed-JSON 400) that only pass after steps 10-11; step 13 (./gradlew clean build) is the authoritative gate. Planner may add a note that criteria are cumulative."
-  - "F-3: plan C-14 does not specify the unauthenticated response for protected non-registration routes (401 vs form-login 302); C-T6 asserts 401. Planner should fix an entry point (recommend HttpStatusEntryPoint 401) or defer the assertion to SECURITY_REVIEW (R-2)."
-  - "F-4: PD-1 maps malformed JSON and unknown-field both through one HttpMessageNotReadableException branch (one message); OpenAPI shows two distinct example messages. Examples are illustrative; AC-6 body shape preserved. Branch on the cause if distinct messages are wanted."
-  - "F-5: New dependency spring-boot-starter-validation (M-1) is absent from build.gradle.kts; mandated by AD-5, first-party, BOM-version-managed. Confirm at HUMAN_PLAN_APPROVAL."
-  - "Carried R-1: ddl-auto=validate vs OffsetDateTime <-> TIMESTAMP WITH TIME ZONE and H2 2.x IDENTITY clause ordering (PD-6); execution step 4 gate; IMPLEMENTATION / IMPLEMENTATION_VERIFICATION own it."
-  - "Carried R-2: Spring Security 6 filter chain must scope the public matcher AND the CSRF exemption to POST /api/v1/customers and keep anyRequest().authenticated(); SECURITY_REVIEW verifies (C-T6)."
-  - "Carried R-3/PD-2: password 12..72 bound is UTF-8 BYTES in both the validator and the service re-check; C-T1 needs a multi-byte (>72 bytes, <=72 chars) boundary vector."
-  - "Carried R-5: M-4 adds @ActiveProfiles(\"test\") to CustomerPortalApplicationTests so contextLoads still boots with Security + JPA active."
+  - "ORCHESTRATOR STATE REPAIR (TEST_WRITING continue, 2026-08-31): docs/plans/US-001-implementation-plan.md front-matter status was still DRAFT after PLAN_REVIEW (PASS) and HUMAN_PLAN_APPROVAL (2026-08-31T11:20:00Z). Per artifact-schema.md the orchestrator flips a reviewed input to APPROVED when it records the passing gate; the write was missed at HUMAN_PLAN_APPROVAL. Corrected to status: APPROVED, updated_at 2026-08-31T11:20:00Z (matches the api_design/db_design precedent bumped at DESIGN_REVIEW). No version bump, no content change."
+  - "TEST_WRITING F-a: the executable suite is written at the HTTP boundary (MockMvc) and the schema boundary (INFORMATION_SCHEMA via JdbcTemplate) with no production-type imports, so the test tree compiles pre-implementation (test-writer red-phase rule). Unit-level depth — PasswordPolicyValidatorTest (C-T1, byte-precise password matrix), CustomerServiceTest (C-T3), CustomerPersistenceTest (C-T2) — is DEFERRED to IMPLEMENTATION, fully specified in docs/tests/US-001-ac-test-matrix.md, and gated by plan execution steps 4 and 6. Every mandatory AC (AC-001..AC-007) has an executable test that runs now."
+  - "TEST_WRITING F-b (carries plan-review F-3 / risk R-2): RegistrationSecurityPostureTest.protectedRouteReturns401WhenUnauthenticated asserts 401 for an unauthenticated protected route, encoding the plan's recommended HttpStatusEntryPoint(401). If IMPLEMENTATION adopts form login (302) the test fails deliberately and SECURITY_REVIEW arbitrates."
+  - "TEST_WRITING F-c: build.gradle.kts is NOT modified — spring-boot-starter-validation (plan M-1) stays IMPLEMENTATION's to add; the boundary-level suite needs no Bean-Validation API on the test classpath. CustomerPortalApplicationTests is NOT modified — @ActiveProfiles(\"test\") on it is plan edit M-4, IMPLEMENTATION-owned. src/test/resources/application-test.yaml was created (plan C-17); IMPLEMENTATION may extend it but must not weaken isolation, ddl-auto=validate, or the H2-console setting."
+  - "TEST_WRITING red-phase evidence (./gradlew test): 37 tests, 33 fail. All 22 CustomerRegistrationApiTest fail HTTP 403 (default CSRF rejects the tokenless POST — no SecurityConfig/controller yet). 9 CustomerSchemaTest fail on the missing customer table. 2 RegistrationSecurityPostureTest fail (registration not yet public/CSRF-exempt). 4 pass: contextLoads (regression, unchanged), noPlaintextPasswordColumnExists, protectedRouteReturns401, h2ConsoleIsNotExposed (guards). No compile/import/context/fixture failures."
+  - "Carried R-1/PD-6: ddl-auto=validate vs OffsetDateTime <-> TIMESTAMP WITH TIME ZONE and H2 2.x IDENTITY clause ordering; CustomerPersistenceTest (C-T2) + IMPLEMENTATION/IMPLEMENTATION_VERIFICATION own it."
+  - "Carried R-2: Spring Security 6 filter chain must scope the public matcher AND the CSRF exemption to POST /api/v1/customers and keep anyRequest().authenticated(); SECURITY_REVIEW verifies. 'CSRF still enforced elsewhere' is unassertable in US-001 (no second writable endpoint)."
+  - "Carried R-3/PD-2: password 12..72 bound is UTF-8 BYTES in both the validator and the service re-check. Covered at HTTP level now by passwordOver72BytesButUnder72CharsReturns400WithPasswordFieldError ('Aa1!'+'€'×23 = 27 chars / 73 bytes); exhaustive validator matrix deferred to C-T1."
+  - "Carried R-5: M-4 adds @ActiveProfiles(\"test\") to CustomerPortalApplicationTests so contextLoads still boots with Security + JPA active — IMPLEMENTATION-owned; currently passes."
   - "Carried R-6: JPA auditing DateTimeProvider pinned to OffsetDateTime.now(ZoneOffset.UTC) in config (C-15), not the main application class (AD-7)."
-  - "Carried R-7: password constraint message is static/generic, never echoes the submitted value (SC-9); SECURITY_REVIEW checks."
+  - "Carried R-7: password constraint message is static/generic, never echoes the submitted value (SC-9); passwordValidationMessageDoesNotEchoTheSubmittedValue asserts it at HTTP level; SECURITY_REVIEW also checks."
   - "Carried R-8: scope guard - GET /api/v1/customers/{id}, login, UserDetailsService, rate limiting all explicitly out of scope."
-  - "Test skeletons C-T1..C-T6 are indicative; test-writer owns the definitive AC->test matrix at TEST_WRITING."
+  - "F-1 (carried from PLAN_REVIEW / HUMAN_PLAN_APPROVAL approver note): docs/decisions/US-001-open-decisions.md v1 still shows OD-001..OD-006 as status: OPEN; authoritative resolutions (OD-001:A, OD-002:B, OD-003:A, OD-004:A, OD-005:A, OD-006:A) are in history.jsonl at HUMAN_SPEC_APPROVAL and applied consistently. us-clarifier should publish v2 marking them RESOLVED. Non-blocking, no loop-back."
+  - "F-2 (carried): plan execution-order per-step completion criteria for steps 6-10 reference assertions that only pass after steps 10-11; step 13 (./gradlew clean build) is the authoritative gate."
+  - "F-4 (carried): PD-1 maps malformed JSON and unknown-field both through one HttpMessageNotReadableException branch (one message); OpenAPI shows two distinct example messages. Examples illustrative; AC-6 shape preserved. Tests assert status 400 + body shape only, not the message text."
+  - "F-5 (carried): New dependency spring-boot-starter-validation (M-1) is absent from build.gradle.kts; mandated by AD-5, first-party, BOM-version-managed. IMPLEMENTATION adds it at execution step 2."
 started_at: 2026-08-30T23:50:01Z
-updated_at: 2026-08-31T11:05:00Z
+updated_at: 2026-08-31T11:26:00Z
 completed_at: null
 archived_at: null
