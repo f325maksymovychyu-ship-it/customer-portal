@@ -4,18 +4,37 @@
 version: 1
 story: US-001
 workflow: story-delivery
-current_stage: CLARIFICATION
-previous_stage: BACKLOG_SYNC
-last_completed_stage: BACKLOG_SYNC
+current_stage: DB_DESIGN
+previous_stage: API_DESIGN
+last_completed_stage: API_DESIGN
 status: IN_PROGRESS
 attempt: 1
-last_invoked_skill: null
-last_result: null
-last_artifacts: []
+last_invoked_skill: openapi-designer
+last_result:
+  verdict: PASS
+  stage: API_DESIGN
+  recorded_at: 2026-08-31T08:18:54Z
+last_artifacts:
+  - type: openapi
+    path: docs/designs/api/US-001-openapi.yaml
+    version: 1
+  - type: api_design
+    path: docs/designs/api/US-001-api-design.md
+    version: 1
 pending_human_gate: null
 blocking_issues: []
-non_blocking_findings: []
+non_blocking_findings:
+  - "API_DESIGN F-2 resolved: unknown/extra JSON request fields rejected with 400 (additionalProperties: false); recorded in api_design §3."
+  - "Q-1 (DB_DESIGN): confirm email column length 254 (OD-001:A) and reconcile entity name 'Customer' vs business-glossary 'Account' (spec-review F-6)."
+  - "Q-2 (DB_DESIGN): owns final password_hash column definition (spec-review F-4; persistence-conventions.md PC-9 VARCHAR(60))."
+  - "Q-4 (TEST_WRITING/IMPLEMENTATION): password 72-limit is BCrypt bytes, not characters (spec-review F-5); OpenAPI expresses maxLength 72 characters only."
+  - "Location header targets GET /api/v1/customers/{id}, not implemented by US-001 (future Story)."
+  - "HUMAN_SPEC_APPROVAL approved 2026-08-31T07:48:48Z by obutr <ayubutrym@gmail.com>. Open Decisions resolved: OD-001:A, OD-002:B, OD-003:A, OD-004:A, OD-005:A, OD-006:A. open_decisions.md v1 still shows entries as OPEN; approved resolutions are authoritative."
+  - "F-1: AC-007 annotation \"AC-2\" is ambiguous with Story AC-002; means api-conventions.md AC-2."
+  - "F-3: spec §6.3 / FR-2 bundles Content-Type (415) and body-shape rules; body-shape rule only in prose."
+  - "F-5: spec §6.2 password max 72 'characters' vs BCrypt's 72-byte input limit; treat as bytes downstream."
+  - "F-6: spec entity named 'Customer' vs business-glossary 'Account' for the credential representation; DB_DESIGN to reconcile."
 started_at: 2026-08-30T23:50:01Z
-updated_at: 2026-08-30T23:50:01Z
+updated_at: 2026-08-31T08:18:54Z
 completed_at: null
 archived_at: null

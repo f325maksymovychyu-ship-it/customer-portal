@@ -1,0 +1,307 @@
+openapi: 3.0.3
+
+info:
+  title: Customer Portal API — Customer Registration (US-001)
+  description: >
+    HTTP contract for US-001 Customer Registration. Adds a single public
+    endpoint that lets an unauthenticated client self-register a Customer
+    account. Authoritative artifact paths: docs/workflow/artifact-paths.yaml.
+  version: "1"
+
+x-story: US-001
+x-source-specification: docs/specifications/US-001-spec.md
+x-source-specification-version: 1
+x-produced-by: openapi-designer
+x-open-decisions:
+  OD-001: "A — Jakarta @Email semantics + email maxLength 254"
+  OD-002: "B — POST /api/v1/customers is exempt from CSRF (recorded architecture decision); CSRF remains enabled for all other endpoints"
+  OD-003: "A — duplicate email returns 409 Conflict with an explicit message"
+  OD-004: "A — 201 response body = id, email, role, createdAt"
+  OD-005: "A — rate limiting / anti-abuse out of scope for US-001"
+  OD-006: "A — email normalized to lowercase in the service; plain UNIQUE constraint (DB_DESIGN concern, no contract impact)"
+x-request-shape-policy: >
+  Unknown or extra JSON properties in the request body are rejected with 400
+  (request-shape failure); they are never silently ignored. Resolves
+  spec-review finding F-2 / Specification §6.3.
+
+servers:
+  - url: /api/v1
+    description: Version 1 (URI-path versioning, api-conventions.md AC-1)
+
+tags:
+  - name: Customers
+    description: Customer account resources
+
+paths:
+  /customers:
+    post:
+      tags: [Customers]
+      operationId: registerCustomer
+      summary: Register a new Customer account
+      description: >
+        Public, unauthenticated endpoint (security-conventions.md SC-4 lists
+        registration as the one public endpoint). Validates the request body
+        server-side, rejects a duplicate email (case-insensitive), hashes the
+        password with BCrypt, and creates an enabled Customer with role
+        CUSTOMER. The plaintext password and the password hash are never
+        returned. CSRF is disabled for this path only (OD-002:B).
+      security: []
+      x-public: true
+      x-csrf-exempt: true
+      x-authorization: none
+      requestBody:
+        required: true
+        description: >
+          Must be application/json (api-conventions.md AC-2). A request with a
+          body and a missing or non-JSON Content-Type is rejected with 415.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationRequest'
+            examples:
+              valid:
+                summary: Valid registration
+                value:
+                  email: "customer@example.com"
+                  password: "Str0ng&Pass!word"
+      responses:
+        '201':
+          description: >
+            Account created. The Location header points at the created resource.
+            AC-001, AC-005.
+          headers:
+            Location:
+              description: URI of the created Customer resource (/api/v1/customers/{id}).
+              required: true
+              schema:
+                type: string
+                format: uri-reference
+                example: /api/v1/customers/42
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+              examples:
+                created:
+                  value:
+                    id: 42
+                    email: "customer@example.com"
+                    role: "CUSTOMER"
+                    createdAt: "2026-08-31T08:15:30Z"
+        '400':
+          description: >
+            Request-shape or bean-validation failure, or malformed JSON, or an
+            unknown/extra JSON property. No account is created. AC-003, AC-006,
+            AC-007-adjacent. fieldErrors is present for field-level validation
+            failures.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidEmail:
+                  summary: Email fails format/length
+                  value:
+                    timestamp: "2026-08-31T08:15:30Z"
+                    status: 400
+                    error: "Bad Request"
+                    message: "Validation failed for one or more fields."
+                    path: "/api/v1/customers"
+                    fieldErrors:
+                      - field: "email"
+                        message: "must be a well-formed email address"
+                invalidPassword:
+                  summary: Password fails policy
+                  value:
+                    timestamp: "2026-08-31T08:15:30Z"
+                    status: 400
+                    error: "Bad Request"
+                    message: "Validation failed for one or more fields."
+                    path: "/api/v1/customers"
+                    fieldErrors:
+                      - field: "password"
+                        message: "must be at least 12 characters and include upper, lower, digit, and special characters"
+                unknownField:
+                  summary: Unknown JSON property
+                  value:
+                    timestamp: "2026-08-31T08:15:30Z"
+                    status: 400
+                    error: "Bad Request"
+                    message: "Request body contains an unknown field."
+                    path: "/api/v1/customers"
+                malformedJson:
+                  summary: Malformed JSON body
+                  value:
+                    timestamp: "2026-08-31T08:15:30Z"
+                    status: 400
+                    error: "Bad Request"
+                    message: "Malformed JSON request body."
+                    path: "/api/v1/customers"
+        '409':
+          description: >
+            An account already exists for the submitted email (compared
+            case-insensitively). No second account is created. AC-002, OD-003:A.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                duplicateEmail:
+                  value:
+                    timestamp: "2026-08-31T08:15:30Z"
+                    status: 409
+                    error: "Conflict"
+                    message: "An account with this email already exists."
+                    path: "/api/v1/customers"
+        '415':
+          description: >
+            The request Content-Type is missing or is not application/json.
+            api-conventions.md AC-2, Specification AC-007.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unsupportedMediaType:
+                  value:
+                    timestamp: "2026-08-31T08:15:30Z"
+                    status: 415
+                    error: "Unsupported Media Type"
+                    message: "Content-Type 'text/plain' is not supported."
+                    path: "/api/v1/customers"
+        '500':
+          description: >
+            Unmapped server error. The body never leaks stack traces, SQL,
+            class names, file paths, or database URLs (SC-9).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internal:
+                  value:
+                    timestamp: "2026-08-31T08:15:30Z"
+                    status: 500
+                    error: "Internal Server Error"
+                    message: "An unexpected error occurred."
+                    path: "/api/v1/customers"
+
+components:
+  schemas:
+
+    RegistrationRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          minLength: 1
+          maxLength: 254
+          format: email
+          description: >
+            Customer email. Validated with Jakarta @Email semantics (non-empty
+            local part, '@', domain) and a maximum stored length of 254
+            characters (OD-001:A). Uniqueness is enforced case-insensitively
+            (business-rules.md BR-001/BR-002); the service normalizes the value
+            to lowercase before persistence (OD-006:A).
+          example: "customer@example.com"
+        password:
+          type: string
+          format: password
+          writeOnly: true
+          minLength: 12
+          maxLength: 72
+          description: >
+            Plaintext password, accepted only on this inbound DTO (SC-1). Never
+            persisted, logged, returned, or placed on a response DTO. Policy
+            (security-conventions.md SC-1): 12–72 length, at least one
+            uppercase, one lowercase, one digit, and one special character.
+            The 72 limit is BCrypt's input limit and is enforced as 72 bytes
+            downstream (spec-review F-5); this contract expresses it as a
+            character maximum. Enforced by a custom constraint at the request
+            layer and re-checked in the service before hashing (FR-6).
+          example: "Str0ng&Pass!word"
+
+    CustomerResponse:
+      type: object
+      description: >
+        Safe representation of a created Customer (OD-004:A). Contains no
+        password, no password hash, and no internal state such as `enabled`.
+      required:
+        - id
+        - email
+        - role
+        - createdAt
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Surrogate identifier of the created Customer.
+          example: 42
+        email:
+          type: string
+          format: email
+          description: The stored (normalized, lowercase) email.
+          example: "customer@example.com"
+        role:
+          type: string
+          enum: [CUSTOMER]
+          description: Assigned role. Always CUSTOMER for self-registration (SC-2, BR-006).
+          example: "CUSTOMER"
+        createdAt:
+          type: string
+          format: date-time
+          description: UTC creation timestamp (ISO-8601), set via JPA auditing.
+          example: "2026-08-31T08:15:30Z"
+
+    ErrorResponse:
+      type: object
+      description: >
+        Standard error body from api-conventions.md AC-6, produced by the single
+        @RestControllerAdvice in the exception package (AC-9). `message` is
+        safe to display and never leaks internals (SC-9).
+      required:
+        - timestamp
+        - status
+        - error
+        - message
+        - path
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-08-31T08:15:30Z"
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: "Bad Request"
+        message:
+          type: string
+          example: "Validation failed for one or more fields."
+        path:
+          type: string
+          example: "/api/v1/customers"
+        fieldErrors:
+          type: array
+          description: Present only for field-level bean-validation failures.
+          items:
+            $ref: '#/components/schemas/FieldError'
+
+    FieldError:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          example: "email"
+        message:
+          type: string
+          description: Safe validation message; never echoes the submitted value (SC-9).
+          example: "must be a well-formed email address"
