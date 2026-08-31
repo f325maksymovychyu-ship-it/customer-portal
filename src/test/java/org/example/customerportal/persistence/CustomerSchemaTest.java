@@ -126,7 +126,7 @@ class CustomerSchemaTest {
     void caseInsensitiveDuplicateEmailCollidesOnTheUniqueConstraint() {
         jdbc.update("INSERT INTO customer (email, password_hash, role, enabled, created_at, updated_at) "
                 + "VALUES ('collide@example.com', '"
-                + "$2a$10$abcdefghijklmnopqrstuvabcdefghijklmnopqrstuvwxyz012345"
+                + "$2a$10$abcdefghijklmnopqrstuvabcdefghijklmnopqrstuvwxyz01234"
                 + "', 'CUSTOMER', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)");
 
         // The service lower-cases before insert (OD-006:A); a second row with the
@@ -134,7 +134,7 @@ class CustomerSchemaTest {
         org.junit.jupiter.api.Assertions.assertThrows(Exception.class, () ->
                 jdbc.update("INSERT INTO customer (email, password_hash, role, enabled, created_at, updated_at) "
                         + "VALUES ('collide@example.com', '"
-                        + "$2a$10$abcdefghijklmnopqrstuvabcdefghijklmnopqrstuvwxyz012345"
+                        + "$2a$10$abcdefghijklmnopqrstuvabcdefghijklmnopqrstuvwxyz01234"
                         + "', 'CUSTOMER', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"));
     }
 }
