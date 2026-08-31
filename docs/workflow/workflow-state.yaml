@@ -4,23 +4,31 @@
 version: 1
 story: US-001
 workflow: story-delivery
-current_stage: SECURITY_REVIEW
-previous_stage: IMPLEMENTATION_VERIFICATION
-last_completed_stage: IMPLEMENTATION_VERIFICATION
+current_stage: RECONCILIATION
+previous_stage: SECURITY_REVIEW
+last_completed_stage: SECURITY_REVIEW
 status: IN_PROGRESS
 attempt: 1
-last_invoked_skill: implementation-verifier
+last_invoked_skill: security-reviewer
 last_result:
   verdict: PASS
-  stage: IMPLEMENTATION_VERIFICATION
-  recorded_at: 2026-08-31T12:25:03Z
+  stage: SECURITY_REVIEW
+  recorded_at: 2026-08-31T12:34:36Z
 last_artifacts:
-  - type: implementation_verification
-    path: docs/verification/US-001-implementation-verification.md
+  - type: security_review
+    path: docs/reviews/security/US-001-security-review.md
     version: 1
 pending_human_gate: null
 blocking_issues: []
 non_blocking_findings:
+  - "SECURITY_REVIEW PASS (0 Critical, 0 Major, 4 Minor, 2 Informational): SEC-1..SEC-11 all independently verified in code/config/tests; security tests exercise the real SecurityFilterChain. Security-sensitive Open Decisions (OD-002 CSRF:B, OD-003 enumeration:A, OD-005 anti-abuse:A) resolved by human at HUMAN_SPEC_APPROVAL 2026-08-31T07:48:48Z and correctly implemented. runtime_checks PARTIAL, semantic_analysis TEXT_FALLBACK, build/tests reused from implementation_verification v1, NO dependency vulnerability scanning."
+  - "SEC F-1 (Minor, PASSWORD_HANDLING; RECONCILIATION to record accepted-with-recommendation): RegistrationRequest is a record — generated toString() renders the plaintext password. No reachable leak path today (zero logger/System.out/println in src/main; GlobalExceptionHandler never touches the bound DTO; no debug/SQL logging config). SEC-3 holds. Follow-up: custom masking toString() consistent with Customer.toString()."
+  - "SEC F-2 (Minor, API_SECURITY/doc): implemented 400/415 error message strings differ verbatim from OpenAPI illustrative examples (409 matches exactly; AC-6 shape preserved). Implemented messages are more generic — no extra disclosure. Same as IMPL_VERIFICATION MF-2 / D-4. Optional openapi-designer example alignment."
+  - "SEC F-3 (Minor, PERSISTENCE/robustness): CustomerService.register check-then-act (existsByEmail then save); concurrent duplicate trips uq_customer_email as unmapped DataIntegrityViolationException -> 500 not 409. Constraint still prevents the duplicate row; no data-integrity/enumeration impact beyond accepted OD-003:A. No AC/design/test covers concurrency (OD-005:A out of scope). Follow-up Story to map to 409. Same as IMPL_VERIFICATION MF-3."
+  - "SEC F-4 (Minor, doc; carried F-1 / MF-4): docs/decisions/US-001-open-decisions.md v1 still shows OD-001..OD-006 OPEN; resolutions authoritative in history.jsonl and applied. Owned by us-clarifier (publish v2). No implementation impact."
+  - "SEC F-5 (Informational, CONFIGURATION): default-profile datasource uses AUTO_SERVER=TRUE with sa / blank password — H2 mixed-mode TCP listener, no credential. APPROVED config (DB design §8 line 172, plan M-2, impact analysis); local-dev / training data only; test profile isolated in-memory. Recommendation: future hardening Story drops AUTO_SERVER or binds loopback + externalizes an H2 password."
+  - "SEC F-6 (Informational, SECRET_MANAGEMENT): spring.datasource.password: \"\" + username sa committed in application.yaml. Empty string is the H2 default (not a secret), SC-7 not breached; externalize when a real datasource is introduced."
+  - "--- prior IMPLEMENTATION_VERIFICATION findings retained below ---"
   - "IMPL_VERIFICATION PASS: ./gradlew clean build independently reproduced — BUILD SUCCESSFUL (exit 0); 62 tests, 0 failures, 0 errors, 0 skipped across 7 suites. AC-001..AC-007 all VERIFIED with executable test evidence. 0 Critical, 0 Major, 5 Minor findings."
   - "MF-1: implementer corrected a malformed 61-char dummy BCrypt literal to 60 chars (2 occurrences) in test-writer-owned CustomerSchemaTest.caseInsensitiveDuplicateEmailCollidesOnTheUniqueConstraint (VARCHAR(60) per PC-9). git diff f6e7eae..fb833b0 confirms this is the ONLY change to a test-writer test; no assertion/scenario/outcome changed; pre-fix the test was a false RED (first INSERT errored before the constraint assertion). Was IMPLEMENTATION D-3. test-writer owns the suite; RECONCILIATION to note the ownership crossing."
   - "MF-2: implemented 400 (one combined missing/malformed/unknown-field message) and 415 error message strings differ verbatim from the OpenAPI illustrative examples; the 409 message matches exactly, AC-6 body shape preserved, tests assert status+shape only. Consistent with IMPLEMENTATION D-4 / plan-review F-4. Optional: openapi-designer aligns examples in a future revision."
@@ -39,6 +47,6 @@ non_blocking_findings:
   - "Test-isolation smell (not a finding): CustomerSchemaTest and CustomerPersistenceTest share one JVM-lifetime in-memory H2 (DB_CLOSE_DELAY=-1); CustomerSchemaTest inserts two non-transactional rows that outlive the test. Harmless because all other tests use randomized emails."
   - "ORCHESTRATOR STATE REPAIR (TEST_WRITING continue, 2026-08-31): docs/plans/US-001-implementation-plan.md front-matter status was still DRAFT after PLAN_REVIEW (PASS) and HUMAN_PLAN_APPROVAL (2026-08-31T11:20:00Z). Corrected to status: APPROVED, updated_at 2026-08-31T11:20:00Z. No version bump, no content change. (Retained for audit.)"
 started_at: 2026-08-30T23:50:01Z
-updated_at: 2026-08-31T12:25:03Z
+updated_at: 2026-08-31T12:34:36Z
 completed_at: null
 archived_at: null

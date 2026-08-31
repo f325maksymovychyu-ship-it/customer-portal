@@ -1,1 +1,5 @@
-# Directory-preserving placeholder. Do not ignore directory contents.
+﻿# Directory-preserving placeholder. Do not ignore directory contents.
+/harness-dryrun.py
+/harness-migration-baseline.md
+/harness-migration-report.md
+/harness-post-migration-review.md
