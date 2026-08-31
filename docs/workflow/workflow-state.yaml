@@ -4,37 +4,42 @@
 version: 1
 story: US-001
 workflow: story-delivery
-current_stage: DB_DESIGN
-previous_stage: API_DESIGN
-last_completed_stage: API_DESIGN
+current_stage: DESIGN_REVIEW
+previous_stage: DB_DESIGN
+last_completed_stage: DB_DESIGN
 status: IN_PROGRESS
 attempt: 1
-last_invoked_skill: openapi-designer
+last_invoked_skill: db-designer
 last_result:
   verdict: PASS
-  stage: API_DESIGN
-  recorded_at: 2026-08-31T08:18:54Z
+  stage: DB_DESIGN
+  recorded_at: 2026-08-31T09:19:41Z
 last_artifacts:
-  - type: openapi
-    path: docs/designs/api/US-001-openapi.yaml
+  - type: database_design
+    path: docs/designs/database/US-001-db-design.md
     version: 1
-  - type: api_design
-    path: docs/designs/api/US-001-api-design.md
+  - type: entity_model
+    path: docs/designs/database/US-001-entity-model.md
     version: 1
 pending_human_gate: null
 blocking_issues: []
 non_blocking_findings:
+  - "DB_DESIGN Q-1 resolved: email column is VARCHAR(254) NOT NULL (OD-001:A)."
+  - "DB_DESIGN Q-1 resolved: entity named Customer / table customer; embodies glossary Customer + Account for US-001 (no profile data). DESIGN_REVIEW to confirm (spec-review F-6)."
+  - "DB_DESIGN Q-2 resolved: password_hash VARCHAR(60) NOT NULL (PC-9); BCrypt output is exactly 60 chars."
+  - "DB_DESIGN Q-4 (TEST_WRITING/IMPLEMENTATION): password 72 limit is BCrypt plaintext input BYTES, enforced in validation/service, not a column constraint; write the 72-byte boundary vector (spec-review F-5)."
+  - "DB_DESIGN: role modeled as EnumType.STRING column VARCHAR(20) with a CHECK, not a customer_role table (PC-5 cites customer_role only as a naming example). DESIGN_REVIEW to confirm."
+  - "DB_DESIGN: ck_customer_role CHECK and role/enabled DB DEFAULT clauses are defensive additions; DESIGN_REVIEW may drop them."
+  - "DB_DESIGN: schema is a new hand-written src/main/resources/schema.sql; ddl-auto=validate; H2 file-based local / in-memory tests (PC-1, PC-2, SEC-10)."
   - "API_DESIGN F-2 resolved: unknown/extra JSON request fields rejected with 400 (additionalProperties: false); recorded in api_design §3."
-  - "Q-1 (DB_DESIGN): confirm email column length 254 (OD-001:A) and reconcile entity name 'Customer' vs business-glossary 'Account' (spec-review F-6)."
-  - "Q-2 (DB_DESIGN): owns final password_hash column definition (spec-review F-4; persistence-conventions.md PC-9 VARCHAR(60))."
-  - "Q-4 (TEST_WRITING/IMPLEMENTATION): password 72-limit is BCrypt bytes, not characters (spec-review F-5); OpenAPI expresses maxLength 72 characters only."
+  - "Q-3 (IMPLEMENTATION): confirm Jackson FAIL_ON_UNKNOWN_PROPERTIES enabled and mapped to 400 (api_design §3)."
   - "Location header targets GET /api/v1/customers/{id}, not implemented by US-001 (future Story)."
   - "HUMAN_SPEC_APPROVAL approved 2026-08-31T07:48:48Z by obutr <ayubutrym@gmail.com>. Open Decisions resolved: OD-001:A, OD-002:B, OD-003:A, OD-004:A, OD-005:A, OD-006:A. open_decisions.md v1 still shows entries as OPEN; approved resolutions are authoritative."
   - "F-1: AC-007 annotation \"AC-2\" is ambiguous with Story AC-002; means api-conventions.md AC-2."
   - "F-3: spec §6.3 / FR-2 bundles Content-Type (415) and body-shape rules; body-shape rule only in prose."
   - "F-5: spec §6.2 password max 72 'characters' vs BCrypt's 72-byte input limit; treat as bytes downstream."
-  - "F-6: spec entity named 'Customer' vs business-glossary 'Account' for the credential representation; DB_DESIGN to reconcile."
+  - "F-6: spec entity named 'Customer' vs business-glossary 'Account' for the credential representation; DB_DESIGN reconciled (db-design §3), DESIGN_REVIEW to confirm."
 started_at: 2026-08-30T23:50:01Z
-updated_at: 2026-08-31T08:18:54Z
+updated_at: 2026-08-31T09:19:41Z
 completed_at: null
 archived_at: null
