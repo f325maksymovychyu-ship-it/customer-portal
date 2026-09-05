@@ -2,50 +2,271 @@
 # CANONICAL STORY LIFECYCLE STATUS REGISTRY
 # =============================================================================
 # Authoritative source for each Story's lifecycle status.
-# Owner: backlog-sync (updates this file atomically with
-#        docs/workflow/active-story.yaml). story-orchestrator updates the active
-#        Story's `state` on activation, COMPLETED, and ARCHIVED.
-#
-# Story Markdown files under docs/stories/ do NOT carry a mutable status field.
+# Owner: a human for now (backlog-sync does not exist — see docs/workflow/gaps.md).
 #
 # state enum: BACKLOG | READY | IN_PROGRESS | COMPLETED | ARCHIVED
+#
+# `state: IN_PROGRESS` below means "has at least a specification and one
+# specification_review on disk" — it does NOT mean the review verdict was
+# PASS, and it does NOT mean any design/plan/implementation work has started.
+# Nobody has read all of these reviews to confirm verdicts as part of this
+# migration; treat IN_PROGRESS as "further along than BACKLOG", not as a
+# claim about where each Story actually sits in stage-map.yaml.
 # =============================================================================
 version: 1
 
 stories:
 
-  - id: US-001
-    slug: register-customer
-    path: docs/stories/US-001-register-customer.md
+  # --- Epic 1: Users --------------------------------------------------------
+  - id: CP-101
+    slug: customer-registration
+    path: null   # no story file exists — spec was authored directly (docs/product/epic-map.md)
     epic: EPIC-1
     title: Customer Registration
     state: IN_PROGRESS
-    source:
-      type: local_only
-      repository: null
-      issue_number: null
-      issue_url: null
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
 
-  - id: US-002
-    slug: customer-login
-    path: docs/stories/US-002-customer-login.md
-    epic: EPIC-1
-    title: Customer Login
-    state: READY
-    source:
-      type: local_only
-      repository: null
-      issue_number: null
-      issue_url: null
+  - id: google-login
+    slug: google-login
+    path: docs/stories/google-login.md
+    epic: null   # does not map to a listed epic in docs/product/epic-map.md — unassigned
+    title: Google Login
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
 
-  - id: US-003
-    slug: customer-profile-view
-    path: docs/stories/US-003-customer-profile-view.md
-    epic: EPIC-1
-    title: View Customer Profile
-    state: BACKLOG
-    source:
-      type: local_only
-      repository: null
-      issue_number: null
-      issue_url: null
+  # --- Epic 2: Authentication ------------------------------------------------
+  - id: US-2.1
+    slug: login
+    path: docs/stories/US-2.1-login.md
+    epic: EPIC-2
+    title: Login
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-2.2
+    slug: logout
+    path: docs/stories/US-2.2-logout.md
+    epic: EPIC-2
+    title: Logout
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-2.3
+    slug: active-sessions
+    path: docs/stories/US-2.3-active-sessions.md
+    epic: EPIC-2
+    title: Active Session Management
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-2.4
+    slug: refresh-token
+    path: docs/stories/US-2.4-refresh-token.md
+    epic: EPIC-2
+    title: Refresh Token
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-2.5
+    slug: password-reset-request
+    path: docs/stories/US-2.5-password-reset-request.md
+    epic: EPIC-2
+    title: Password Reset (request)
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-2.6
+    slug: password-reset-confirm
+    path: docs/stories/US-2.6-password-reset-confirm.md
+    epic: EPIC-2
+    title: Password Reset (confirm)
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  # --- Epic 3: Administration ------------------------------------------------
+  - id: US-3.1
+    slug: list-users
+    path: docs/stories/US-3.1-list-users.md
+    epic: EPIC-3
+    title: List and Search Users
+    state: IN_PROGRESS
+    note: "3 review rounds on file (review-01..03) — check docs/reviews/specifications/ for the latest verdict before trusting this state."
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-3.2
+    slug: create-user
+    path: docs/stories/US-3.2-create-user.md
+    epic: EPIC-3
+    title: Create User
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-3.3
+    slug: update-user
+    path: docs/stories/US-3.3-update-user.md
+    epic: EPIC-3
+    title: Update User
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-3.4
+    slug: deactivate-user
+    path: docs/stories/US-3.4-deactivate-user.md
+    epic: EPIC-3
+    title: Deactivate and Reactivate User
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-3.5
+    slug: assign-roles
+    path: docs/stories/US-3.5-assign-roles.md
+    epic: EPIC-3
+    title: Assign Roles
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-3.6
+    slug: manage-roles
+    path: docs/stories/US-3.6-manage-roles.md
+    epic: EPIC-3
+    title: Manage Roles and Permissions
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-3.7
+    slug: view-audit-information
+    path: docs/stories/US-3.7-view-audit-information.md
+    epic: EPIC-3
+    title: View Audit Information
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-3.8
+    slug: export-audit-information
+    path: docs/stories/US-3.8-export-audit-information.md
+    epic: EPIC-3
+    title: Export Audit Information
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  # --- Epic 4: Feedback / Support ---------------------------------------------
+  - id: US-4.1
+    slug: create-ticket
+    path: docs/stories/US-4.1-create-ticket.md
+    epic: EPIC-4
+    title: Create Ticket
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-4.2
+    slug: my-tickets
+    path: docs/stories/US-4.2-my-tickets.md
+    epic: EPIC-4
+    title: My Tickets
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-4.3
+    slug: ticket-queue-assignment
+    path: docs/stories/US-4.3-ticket-queue-assignment.md
+    epic: EPIC-4
+    title: Queue and Assignment
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-4.4
+    slug: customer-reply
+    path: docs/stories/US-4.4-customer-reply.md
+    epic: EPIC-4
+    title: Customer Reply
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-4.5
+    slug: agent-reply-internal-notes
+    path: docs/stories/US-4.5-agent-reply-internal-notes.md
+    epic: EPIC-4
+    title: Agent Reply and Internal Notes
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-4.6
+    slug: ticket-resolution
+    path: docs/stories/US-4.6-ticket-resolution.md
+    epic: EPIC-4
+    title: Ticket Resolution
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-4.7
+    slug: reopen-ticket
+    path: docs/stories/US-4.7-reopen-ticket.md
+    epic: EPIC-4
+    title: Reopen Ticket
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  # --- Epic 5: Notifications ---------------------------------------------------
+  - id: US-5.1
+    slug: notification-centre
+    path: docs/stories/US-5.1-notification-centre.md
+    epic: EPIC-5
+    title: Notification Centre
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-5.2
+    slug: realtime-delivery
+    path: docs/stories/US-5.2-realtime-delivery.md
+    epic: EPIC-5
+    title: Real-Time Delivery
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-5.3
+    slug: read-state
+    path: docs/stories/US-5.3-read-state.md
+    epic: EPIC-5
+    title: Read State
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-5.4
+    slug: notification-preferences
+    path: docs/stories/US-5.4-notification-preferences.md
+    epic: EPIC-5
+    title: Preferences
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-5.5
+    slug: email-notifications
+    path: docs/stories/US-5.5-email-notifications.md
+    epic: EPIC-5
+    title: Email Delivery
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-5.6
+    slug: unsubscribe
+    path: docs/stories/US-5.6-unsubscribe.md
+    epic: EPIC-5
+    title: One-Click Unsubscribe
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-5.7
+    slug: grouping-and-digest
+    path: docs/stories/US-5.7-grouping-and-digest.md
+    epic: EPIC-5
+    title: Grouping and Digest
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }
+
+  - id: US-5.8
+    slug: system-announcements
+    path: docs/stories/US-5.8-system-announcements.md
+    epic: EPIC-5
+    title: System Announcements
+    state: IN_PROGRESS
+    source: { type: local_only, repository: null, issue_number: null, issue_url: null }

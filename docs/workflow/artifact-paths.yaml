@@ -8,18 +8,24 @@
 #   - Skills MUST resolve artifact locations from this registry, not from
 #     hard-coded paths. A Skill may show a resolved example path for
 #     readability but must state that this file is authoritative.
-#   - {story_id}  -> canonical Story identifier, e.g. US-001
-#   - {slug}      -> lowercase-kebab short title from the Story front matter
+#   - {story_id} -> canonical Story identifier as already used in this
+#     project, e.g. US-2.1, CP-101 (see docs/catalog/stories.yaml for the
+#     full list — this project did NOT adopt the zero-padded US-NNN scheme).
+#   - {slug}     -> lowercase-kebab short title, e.g. "login"
 #   - Exactly one `owner` per artifact type. Other Skills may read or
 #     reference an artifact but must not (re)generate an artifact they do
 #     not own.
-#   - A consumed artifact that has no `owner` here is an external input.
+#   - An `owner` of `null` would mean no Skill implements that stage yet in
+#     this project (see docs/workflow/gaps.md); as of 2026-09-05 every
+#     artifact below has a real owner, but most owning Skills have not yet
+#     been run end-to-end — see gaps.md for that caveat.
 #
 # Related authorities:
 #   - docs/workflow/stage-map.yaml        workflow + routing
 #   - docs/workflow/artifact-lifecycle.md status vocabularies
 #   - docs/workflow/artifact-schema.md    artifact front matter
 #   - docs/workflow/state-schema.md       workflow state
+#   - docs/workflow/gaps.md               skills/docs not yet implemented
 # =============================================================================
 
 version: 1
@@ -30,7 +36,7 @@ artifacts:
   story:
     pattern: docs/stories/{story_id}-{slug}.md
     owner: backlog-sync
-    external_ok: true          # may pre-exist locally without a GitHub source
+    external_ok: true
 
   story_catalog:
     pattern: docs/catalog/stories.yaml
@@ -39,20 +45,20 @@ artifacts:
   # --- Clarification ------------------------------------------------------
   clarification_report:
     pattern: docs/evidence/{story_id}-clarification-report.md
-    owner: us-clarifier
+    owner: story-clarifier   # reference calls this role "us-clarifier"
 
   open_decisions:
     pattern: docs/decisions/{story_id}-open-decisions.md
-    owner: us-clarifier
+    owner: story-clarifier
 
   # --- Specification ------------------------------------------------------
   specification:
-    pattern: docs/specifications/{story_id}-spec.md
-    owner: spec-writer
+    pattern: docs/specifications/{story_id}-{slug}.md
+    owner: story-spec-writer   # reference calls this role "spec-writer"
 
   specification_review:
-    pattern: docs/reviews/specifications/{story_id}-spec-review.md
-    owner: spec-verifier
+    pattern: docs/reviews/specifications/{story_id}-{slug}-review-{n}.md
+    owner: story-spec-reviewer   # reference calls this role "spec-verifier"
 
   # --- Design ------------------------------------------------------------
   api_design:
@@ -65,11 +71,11 @@ artifacts:
 
   database_design:
     pattern: docs/designs/database/{story_id}-db-design.md
-    owner: db-designer
+    owner: database-change-planner
 
   entity_model:
     pattern: docs/designs/database/{story_id}-entity-model.md
-    owner: db-designer
+    owner: database-change-planner
 
   design_review:
     pattern: docs/reviews/designs/{story_id}-design-review.md
@@ -78,7 +84,7 @@ artifacts:
   # --- Impact / Planning ------------------------------------------------
   impact_analysis:
     pattern: docs/impact-analysis/{story_id}-impact-analysis.md
-    owner: impact-analyzer
+    owner: file-impact-analyzer   # reference calls this role "impact-analyzer"
 
   implementation_plan:
     pattern: docs/plans/{story_id}-implementation-plan.md
@@ -141,26 +147,3 @@ artifacts:
   project_state:
     pattern: docs/knowledge/project-state.md
     owner: story-orchestrator
-
-# =============================================================================
-# Retired paths (MUST NOT appear in any Skill or config; historical review
-# reports are exempt):
-#   docs/backlog/                              -> docs/stories/
-#   docs/harness-evidence/                     -> docs/evidence/
-#   docs/implementation/{id}-implementation-report.md
-#                                              -> docs/evidence/{id}-implementation-report.md
-#   docs/reviews/{id}-spec-review.md           -> docs/reviews/specifications/{id}-spec-review.md
-#   docs/reviews/{id}-plan-review.md           -> docs/reviews/plans/{id}-plan-review.md
-#   docs/designs/{id}-openapi.yaml             -> docs/designs/api/{id}-openapi.yaml
-#   docs/designs/{id}-api-design.md            -> docs/designs/api/{id}-api-design.md
-#   docs/designs/{id}-db-design.md             -> docs/designs/database/{id}-db-design.md
-#   docs/designs/{id}-entity-model.md          -> docs/designs/database/{id}-entity-model.md
-#   docs/tests/{id}-test-plan.md               -> docs/tests/{id}-test-strategy.md
-#   docs/tests/{id}-test-cases.md              -> docs/tests/{id}-ac-test-matrix.md
-#   docs/security/{id}-security-review.md      -> docs/reviews/security/{id}-security-review.md
-#   docs/reconciliation/{id}-reconciliation.md -> docs/reviews/reconciliation/{id}-reconciliation.md
-#   docs/reconciliation/{id}-archive-summary.md-> docs/evidence/{id}-delivery-summary.md
-#   docs/evidence/orchestrator-events.jsonl    -> docs/workflow/history.jsonl
-#   docs/pr/{id}-release-notes.md              -> folded into docs/pr/{id}-pr-summary.md
-#   docs/pr/{id}-pr-preparation.md             -> folded into docs/pr/{id}-pr-summary.md
-# =============================================================================

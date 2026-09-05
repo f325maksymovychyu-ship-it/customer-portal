@@ -1,10 +1,10 @@
 # Architecture
 
-Explicit architecture decisions for the Customer Portal training project. These
-are project decisions, not general framework advice. Skills
-(`impact-analyzer`, `implementation-planner`, `springboot-implementor`,
-`design-reviewer`, `implementation-verifier`, `security-reviewer`,
-`reconciliation-reviewer`) treat this file as authoritative.
+Explicit architecture decisions for the Customer Portal project. These are
+project decisions, not general framework advice. Skills that read designs or
+code (`file-impact-analyzer`, `implementation-planner`) treat this file as
+authoritative; stages with no implemented skill yet (see
+`docs/workflow/gaps.md`) must still honor it once they exist.
 
 ## AD-1 Build & module layout
 
@@ -41,8 +41,8 @@ else in that set is forbidden (`controller → repository`,
   more than one repository call or need a consistent snapshot; otherwise the
   repository call's implicit transaction is acceptable.
 - Controllers and Repositories must not open transactions.
-- No `@Transactional` on `private` methods or self-invoked methods (Spring proxy
-  limitation) — restructure instead.
+- No `@Transactional` on `private` methods or self-invoked methods (Spring
+  proxy limitation) — restructure instead.
 
 ## AD-4 DTO / entity boundary
 
@@ -50,21 +50,21 @@ else in that set is forbidden (`controller → repository`,
 - Every API response body is a class in `model.dto`.
 - Entities (`model.entity`) never appear in a Controller signature, a request
   body, or a response body.
-- Mapping entity ↔ DTO/request happens in the Service layer (a dedicated mapper
-  class is allowed; a mapping library is not added without an approved
+- Mapping entity ↔ DTO/request happens in the Service layer (a dedicated
+  mapper class is allowed; a mapping library is not added without an approved
   decision).
-- A response DTO includes only fields the API contract lists. Credential fields
-  (password, password hash) are never present on a response DTO, even as
-  `null`.
+- A response DTO includes only fields the API contract lists. Credential and
+  token fields (password, password hash, refresh-token value) are never
+  present on a response DTO, even as `null`.
 
 ## AD-5 Validation boundary
 
 - Request-shape validation (required, length, format, allowed values): Bean
-  Validation annotations on the `model.request` class, triggered by `@Valid` on
-  the Controller parameter. `spring-boot-starter-validation` is a required
+  Validation annotations on the `model.request` class, triggered by `@Valid`
+  on the Controller parameter. `spring-boot-starter-validation` is a required
   dependency for this.
-- Business-rule validation (uniqueness, cross-field rules, state checks): in the
-  Service layer, before persistence.
+- Business-rule validation (uniqueness, cross-field rules, state checks): in
+  the Service layer, before persistence.
 - Custom constraint annotations live in the `validation` package.
 - Validation is server-side and independent of any client.
 
@@ -72,8 +72,8 @@ else in that set is forbidden (`controller → repository`,
 
 - One `@RestControllerAdvice` class in the `exception` package is the single
   place that maps exceptions to HTTP responses.
-- Domain/application exceptions are declared in the `exception` package
-  (e.g. `DuplicateEmailException`, `ResourceNotFoundException`). Services throw
+- Domain/application exceptions are declared in the `exception` package (e.g.
+  `DuplicateEmailException`, `ResourceNotFoundException`). Services throw
   these; they carry no HTTP concepts.
 - The advice maps: bean-validation failure → 400; domain "not found" → 404;
   domain "conflict/duplicate" → 409; authn failure → 401; authz failure → 403;
@@ -87,11 +87,21 @@ else in that set is forbidden (`controller → repository`,
 - Framework/infrastructure `@Configuration` classes live in `config`.
 - Security configuration lives in `security` (see `security-conventions.md`).
 - No business logic in a `@Configuration` class.
-- Application settings come from `application.yml` / profile files, never
+- Application settings come from `application.yaml` / profile files, never
   hard-coded; secrets never committed (see `security-conventions.md`).
 
 ## AD-8 Reuse over duplication
 
 Before creating a component, check for an existing one that can be extended
 within these rules. New packages beyond the map in `package-map.md` require an
-approved decision (an Open Decision resolved by a human, not a silent addition).
+approved decision (an Open Decision resolved by a human, not a silent
+addition).
+
+## AD-9 Reserved bounded contexts
+
+`docs/product/epic-map.md` groups work into Users, Authentication,
+Administration, Support Tickets, and Notifications. This project has not yet
+made a Modulith/multi-module split; all of it lives in the single package tree
+under AD-1 until an approved decision says otherwise. Whether Notifications
+gets its own top-level package is an open question tracked in
+`docs/workflow/gaps.md`.

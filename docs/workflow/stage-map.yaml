@@ -5,24 +5,27 @@
 # workflow: stage identifiers, stage order, stage ownership, normal
 # transitions, loop-back targets, and human gates.
 #
+# STATUS: the story-orchestrator Skill (`.claude/skills/story-orchestrator/`)
+# and the `/so:*` commands enforce this file — invoke `/so:next` to advance the
+# active Story rather than invoking stage Skills or editing
+# docs/workflow/workflow-state.yaml / docs/catalog/stories.yaml by hand. Every
+# automated stage now has an owning Skill (see docs/workflow/gaps.md for the
+# 2026-09-05 port and its caveats — none of these Skills have been run
+# end-to-end yet). The stage graph, artifact ownership, and loop-back rules
+# below are still authoritative: prose docs (stages.md, AGENTS.md, Skill
+# "Position in Workflow" sections) must stay consistent with it.
+#
 # No Skill, command, or prose document may define an alternative stage list,
-# alternative stage identifiers, or alternative routing. Prose docs
-# (stages.md, AGENTS.md, Skill "Position in Workflow" sections) are
-# explanatory and MUST stay consistent with this file.
+# alternative stage identifiers, or alternative routing.
 #
 # Artifact locations referenced here are registry KEYS defined in
 # docs/workflow/artifact-paths.yaml. Never put a filesystem path in this file.
 #
 # Result contract (see docs/workflow/artifact-lifecycle.md):
-#   verdict = PASS            -> orchestrator advances to `next`
-#   verdict = CHANGES_REQUIRED-> orchestrator routes to loop_back[<key>]
-#                                (the Skill selects the key; it MUST exist here)
-#   verdict = BLOCKED         -> orchestrator holds at the current stage and
-#                                surfaces blocking_issues
-#   verdict = NOT_APPLICABLE  -> only where `optional: true`; advances to `next`
-#
-# Only story-orchestrator may record a transition (docs/workflow/workflow-state.yaml
-# + append docs/workflow/history.jsonl). Stage Skills never mutate workflow state.
+#   verdict = PASS            -> advance to `next`
+#   verdict = CHANGES_REQUIRED-> route to loop_back[<key>] (the key MUST exist here)
+#   verdict = BLOCKED         -> hold at the current stage, surface blocking_issues
+#   verdict = NOT_APPLICABLE  -> only where `optional: true`; advance to `next`
 # =============================================================================
 
 version: 1
@@ -53,30 +56,14 @@ stage_order:
   - COMPLETED
   - ARCHIVED
 
-# Artifact types that are produced only when the approved Specification does NOT
-# mark that area NOT_APPLICABLE. When a stage lists one of these in `inputs`, the
-# input is REQUIRED unless the owning stage (API_DESIGN / DB_DESIGN) recorded a
-# NOT_APPLICABLE verdict, in which case the consuming stage proceeds without it.
-# A dry-run / validator treats these as "conditionally required".
+# Artifact types produced only when the approved Specification does NOT mark
+# that area NOT_APPLICABLE. Required unless the owning design stage
+# (API_DESIGN / DB_DESIGN) recorded NOT_APPLICABLE.
 conditional_artifacts:
   - api_design
   - openapi
   - database_design
   - entity_model
-
-# Retired identifiers -> canonical replacement. MUST NOT appear anywhere in the
-# active harness (historical review reports are exempt).
-retired_identifiers:
-  CLARIFY: CLARIFICATION
-  SPEC_WRITE: SPECIFICATION
-  DESIGN: [API_DESIGN, DB_DESIGN]
-  PLANNING: IMPLEMENTATION_PLANNING
-  TESTING: TEST_WRITING
-  VERIFICATION: IMPLEMENTATION_VERIFICATION
-  IMPLEMENTATION_VERIFY: IMPLEMENTATION_VERIFICATION
-  HUMAN_REVIEW: HUMAN_PR_APPROVAL
-  PULL_REQUEST: READY_FOR_PR
-  DONE: COMPLETED
 
 stages:
 
@@ -84,9 +71,9 @@ stages:
     type: automated_skill
     skill: backlog-sync
     purpose: >
-      Synchronize the active Story from the configured GitHub source (when one
+      Synchronize the active Story from a configured GitHub source (when one
       exists) into docs/stories/ and docs/catalog/stories.yaml.
-    inputs: []                       # external: GitHub MCP issues
+    inputs: []
     outputs: [story, story_catalog]
     next: CLARIFICATION
     run_policy: >
@@ -95,21 +82,21 @@ stages:
 
   CLARIFICATION:
     type: automated_skill
-    skill: us-clarifier
+    skill: story-clarifier
     inputs: [story]
     outputs: [clarification_report, open_decisions]
     next: SPECIFICATION
 
   SPECIFICATION:
     type: automated_skill
-    skill: spec-writer
+    skill: story-spec-writer
     inputs: [story, clarification_report, open_decisions]
     outputs: [specification]
     next: SPEC_REVIEW
 
   SPEC_REVIEW:
     type: automated_skill
-    skill: spec-verifier
+    skill: story-spec-reviewer
     inputs: [story, specification, open_decisions]
     outputs: [specification_review]
     next: HUMAN_SPEC_APPROVAL
@@ -138,7 +125,7 @@ stages:
 
   DB_DESIGN:
     type: automated_skill
-    skill: db-designer
+    skill: database-change-planner
     inputs: [specification, api_design, openapi, open_decisions]
     outputs: [database_design, entity_model]
     next: DESIGN_REVIEW
@@ -155,10 +142,9 @@ stages:
     next: IMPACT_ANALYSIS
     optional: true
     optional_when: >
-      Both API_DESIGN and DB_DESIGN recorded verdict NOT_APPLICABLE (the Story
-      changes neither public API behavior nor persistence). There is no design to
-      review; emit verdict NOT_APPLICABLE with a one-line rationale and still
-      produce a design_review artifact stating both areas were out of scope.
+      Both API_DESIGN and DB_DESIGN recorded verdict NOT_APPLICABLE. Emit
+      verdict NOT_APPLICABLE with a one-line rationale and still produce a
+      design_review artifact stating both areas were out of scope.
     loop_back:
       changes_required_api: API_DESIGN
       changes_required_database: DB_DESIGN
@@ -166,7 +152,7 @@ stages:
 
   IMPACT_ANALYSIS:
     type: automated_skill
-    skill: impact-analyzer
+    skill: file-impact-analyzer
     inputs: [story, specification, specification_review, api_design, openapi,
              database_design, entity_model, design_review, open_decisions]
     outputs: [impact_analysis]
@@ -299,8 +285,7 @@ stages:
     required_artifacts: [pr_summary]
     meaning: >
       All harness checks have passed. A human creates or finalizes the Pull
-      Request and records that it is open/ready. No new artifact prerequisites
-      beyond what PR_PREPARATION produced.
+      Request and records that it is open/ready.
     approve_command: "/so:approve"
     on_approve: COMPLETED
     on_reject: PR_PREPARATION
@@ -311,8 +296,8 @@ stages:
     required_artifacts: [pr_summary]
     meaning: >
       A human confirms the Pull Request has been merged, or the delivery has
-      otherwise been explicitly marked complete. Archive mode may run only from
-      this stage.
+      otherwise been explicitly marked complete. Archive mode may run only
+      from this stage.
     approve_command: "/so:approve"
     on_approve: ARCHIVED
     on_reject: PR_PREPARATION
@@ -321,17 +306,14 @@ stages:
     type: terminal
     owner: story-orchestrator
     meaning: >
-      Knowledge consolidation and workflow cleanup are complete. Reached only
-      through archive mode after explicit human invocation. Story artifacts are
-      NOT physically moved; catalog status + artifact metadata distinguish
-      history from active work.
+      Knowledge consolidation and workflow cleanup are complete. Story
+      artifacts are NOT physically moved; catalog status + artifact metadata
+      distinguish history from active work.
     produces: [delivery_summary]
 
 # Input rule: every entry in a stage's `inputs` is either always-required or
 # listed in `conditional_artifacts` above (required unless its owning design
-# stage recorded NOT_APPLICABLE). The orchestrator resolves each to a path via
-# artifact-paths.yaml before invoking the stage Skill.
+# stage recorded NOT_APPLICABLE).
 #
-# Loop-back rule: a Skill may name a loop_back key only if that key exists under
-# the current stage's `loop_back` map in this file. The orchestrator rejects an
-# unknown key and holds the stage as BLOCKED pending human decision.
+# Loop-back rule: a Skill may name a loop_back key only if that key exists
+# under the current stage's `loop_back` map in this file.
